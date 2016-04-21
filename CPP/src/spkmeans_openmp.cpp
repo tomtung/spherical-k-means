@@ -65,7 +65,7 @@ ClusterData* SPKMeansOpenMP::runSPKMeans()
     // compute initial partitioning, concepts, and quality
     initClusters(data);
     float quality = computeQ(data);
-    cout << "Initial quality: " << quality << endl;
+    cerr << "Initial quality: " << quality << endl;
 
 
     // do spherical k-means loop

@@ -71,16 +71,16 @@ void SPKMeans::enableOptimization()
 // clusters have changed.
 void SPKMeans::reportQuality(ClusterData *data, float quality, float dQ)
 {
-    cout << "Quality: " << quality << " (+" << dQ << ")";
+    cerr << "Quality: " << quality << " (+" << dQ << ")";
     if(optimize) {
         int num_same = 0;
         for (int i=0; i<k; i++)
             if(!(data->changed[i]))
                 num_same++;
-        cout << " --- " << num_same << " clusters are the same." << endl;
+        cerr << " --- " << num_same << " clusters are the same." << endl;
     }
     else
-        cout << " --- optimization disabled." << endl;
+        cerr << " --- optimization disabled." << endl;
 }
 
 
@@ -89,13 +89,13 @@ void SPKMeans::reportQuality(ClusterData *data, float quality, float dQ)
 void SPKMeans::reportTime(int iterations, float total_time,
                           float p_time, float c_time)
 {
-    cout << "Done in " << total_time / 1000
+    cerr << "Done in " << total_time / 1000
          << " seconds after " << iterations << " iterations." << endl;
     float total = p_time + c_time;
     if(total == 0)
-        cout << "No individual time stats available." << endl;
+        cerr << "No individual time stats available." << endl;
     else {
-        cout << "Timers (ms): " << endl
+        cerr << "Timers (ms): " << endl
              << "   partitioning [" << p_time << "] ("
                 << (p_time/total)*100 << "%)" << endl
              << "   concepts     [" << c_time << "] ("
@@ -125,7 +125,7 @@ void SPKMeans::initClusters(ClusterData *data)
 {
     // choose an initial partitioning
     int split = dc / k;
-    cout << "Split = " << split << endl;
+    cerr << "Split = " << split << endl;
     int base = 1;
     for(int i=0; i<k; i++) {
         int top = base + split - 1;
@@ -287,7 +287,7 @@ ClusterData* SPKMeans::runSPKMeans()
     // compute initial partitioning, concepts, and quality
     initClusters(data);
     float quality = computeQ(data);
-    cout << "Initial quality: " << quality << endl;
+    cerr << "Initial quality: " << quality << endl;
     
 
     // do spherical k-means loop
@@ -298,7 +298,7 @@ ClusterData* SPKMeans::runSPKMeans()
 
         // TODO - temporary (testing) -----------------------------------------
         /*if(iterations > 1) {
-            cout << "New version." << endl;
+            cerr << "New version." << endl;
             ptimer.start();
             float averagePriority = data->getAverageMovedPriority();
             for(int i=0; i<dc; i++) {
@@ -348,19 +348,19 @@ ClusterData* SPKMeans::runSPKMeans()
         // TODO - temporary testing for empty clusters:
         for(int i=0; i<k; i++) {
             if(!has_docs[i])
-                cout << "Cluster " << i << " is empty!" << endl;
+                cerr << "Cluster " << i << " is empty!" << endl;
         }
 
         ptimer.stop();
 
         // TODO - temporary (testing) -----------------------------------------
         // report priorities and number of documents that moved
-        /*cout << "Number of documents moved: " << data->num_moved << endl;
-        cout << "Average document priority: "
+        /*cerr << "Number of documents moved: " << data->num_moved << endl;
+        cerr << "Average document priority: "
              << data->getAveragePriority() << endl;
-        cout << "   Average moved priority: "
+        cerr << "   Average moved priority: "
              << data->getAverageMovedPriority() << endl;
-        cout << "  Average stayed priority: "
+        cerr << "  Average stayed priority: "
              << data->getAverageStayPriority() << endl;*/
         // --------------------------------------------------------------------
 

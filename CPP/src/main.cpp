@@ -50,9 +50,9 @@ using namespace std;
 // Prints a message on how to use this program.
 void printUsage()
 {
-    cout << endl;
-    cout << "$ ./spkmeans [options]" << endl;
-    cout << "Argument options:" << endl
+    cerr << endl;
+    cerr << "$ ./spkmeans [options]" << endl;
+    cerr << "Argument options:" << endl
          << "  [-d docfile]     set document file path" << endl
          << "  [-v vocabfile]   set vocabulary file path" << endl
          << "  [-k num]         set value of k (number of clusters)" << endl
@@ -66,7 +66,7 @@ void printUsage()
          << "Other commands:" << endl
          << "  $ ./spkmeans --help" << endl
          << "  $ ./spkmeans --version" << endl;
-    cout << "Default values:" << endl
+    cerr << "Default values:" << endl
          << "  > Document File: " << DEFAULT_DOC_FILE << endl
          << "  > Num. Clusters: " << DEFAULT_K << endl
          << "  > Num. Threads:  " << DEFAULT_THREADS << endl
@@ -75,11 +75,11 @@ void printUsage()
          << "    using TXN scheme," << endl
          << "    displaying clustering results," << endl
          << "    optimization enabled." << endl;
-    cout << "*To use max number of threads available, do not set t." << endl;
-    cout << endl
+    cerr << "*To use max number of threads available, do not set t." << endl;
+    cerr << endl
          << "Example usage:" << endl
          << "  $ ./spkmeans -d ../TestData/news20 -k 50 --openmp" << endl;
-    cout << endl;
+    cerr << endl;
 }
 
 
@@ -96,7 +96,7 @@ void displayResults(ClusterData *data, char **words, int num_to_show = 10)
     // for each partition, sum the weights of each word, and show the top
     //  words that occur in the partition:
     for(int i=0; i<(data->k); i++) {
-        cout << "Partition #" << (i+1) << ":" << endl;
+        cerr << "Partition #" << (i+1) << ":" << endl;
 
         // find all documents in this partition and sum them together.
         float *sum = vec_zeros(data->wc);
@@ -111,7 +111,7 @@ void displayResults(ClusterData *data, char **words, int num_to_show = 10)
 
         // sort this sum using C++ priority queue (keeping track of indices)
         vector<float> values(sum, sum + data->wc);
-        priority_queue<pair<float, int>> q;
+        priority_queue< pair<float, int> > q;
         for(int i=0; i<values.size(); i++)
             q.push(pair<float, int>(values[i], i));
 
@@ -119,9 +119,9 @@ void displayResults(ClusterData *data, char **words, int num_to_show = 10)
         for(int i=0; i<num_to_show; i++) {
             int index = q.top().second;
             if(words != 0)
-                cout << "   " << words[index] << endl;
+                cerr << "   " << words[index] << endl;
             else
-                cout << "   " << index << endl;
+                cerr << "   " << index << endl;
             q.pop();
         }
 
@@ -200,7 +200,7 @@ int processArgs(int argc, char **argv,
         else {
             i++;
             if(i >= argc) {
-                cout << "Warning: expected value after \"" << arg
+                cerr << "Warning: expected value after \"" << arg
                      << "\" argument. Continuing anyway." << endl;
                 continue;
             }
@@ -213,7 +213,7 @@ int processArgs(int argc, char **argv,
             else if(arg == "-t") // number of threads
                 *num_threads = atoi(argv[i]);
             else { // otherwise, invalid input so print and decrement i again
-                cout << "Unknown argument: \"" << arg
+                cerr << "Unknown argument: \"" << arg
                      << "\". Use argument --help for more info." << endl;
                 i--;
             }
@@ -223,7 +223,7 @@ int processArgs(int argc, char **argv,
     // check that the document file exists - if not, return error
     ifstream test(doc_fname->c_str());
     if(!test.good()) {
-        cout << "Error: file \"" << *doc_fname << "\" does not exist." << endl;
+        cerr << "Error: file \"" << *doc_fname << "\" does not exist." << endl;
         test.close();
         return RETURN_ERROR;
     }
@@ -253,25 +253,25 @@ int main(int argc, char **argv)
         return 0;
     }
     else if(retval == RETURN_VERSION) {
-        cout << "Version: " << VERSION << endl;
+        cerr << "Version: " << VERSION << endl;
         return 0;
     }
 
     // read data from the document file
     int dc, wc, non_zero;
     float **D = readDocFile(doc_fname.c_str(), &dc, &wc, &non_zero);
-    cout << "DATA: " << dc << " documents, " << wc << " words ("
+    cerr << "DATA: " << dc << " documents, " << wc << " words ("
          << non_zero << " non-zero entries)." << endl;
 
     // if K should be set automatically, compute that here if possible
     if(auto_k) {
         int numerator = dc * wc;
         if(non_zero <= 0 || non_zero > numerator)
-            cout << "Could not set K automatically. Using k=" << k << endl;
+            cerr << "Could not set K automatically. Using k=" << k << endl;
         else
             k = numerator / non_zero;
     }
-    cout << "Running SPK Means on \"" << doc_fname << "\" with k=" << k;
+    cerr << "Running SPK Means on \"" << doc_fname << "\" with k=" << k;
 
     // run the program based on the run type provided (none, openmp, galois)
     ClusterData *data = 0;
@@ -283,13 +283,13 @@ int main(int argc, char **argv)
             spkm_galois.disableOptimization();
         if(!use_scheme)
             spkm_galois.setScheme(SPKMeans::NO_SCHEME);
-        cout << " [Galois: " << spkm_galois.getNumThreads()
+        cerr << " [Galois: " << spkm_galois.getNumThreads()
              << " threads]." << endl;
         data = spkm_galois.runSPKMeans();
     }
 #else
     if(run_type == RUN_GALOIS) {
-        cout << endl << endl << "Error: GALOIS is not available."
+        cerr << endl << endl << "Error: GALOIS is not available."
              << "Please re-compile with Galois to use the \"--galois\" option."
              << endl << endl;
         return 0;
@@ -302,7 +302,7 @@ int main(int argc, char **argv)
             spkm_openmp.disableOptimization();
         if(!use_scheme)
             spkm_openmp.setScheme(SPKMeans::NO_SCHEME);
-        cout << " [OpenMP: " << spkm_openmp.getNumThreads()
+        cerr << " [OpenMP: " << spkm_openmp.getNumThreads()
              << " threads]." << endl;
         data = spkm_openmp.runSPKMeans();
     }
@@ -312,12 +312,17 @@ int main(int argc, char **argv)
             spkm.disableOptimization();
         if(!use_scheme)
             spkm.setScheme(SPKMeans::NO_SCHEME);
-        cout << " [single thread]." << endl;
+        cerr << " [single thread]." << endl;
         data = spkm.runSPKMeans();
     }
 
     // display the results of the algorithm (if anything happened)
     if(data) {
+        // print cluster assignments to stdout
+        for(int j=0; j<(data->dc); j++) {
+            cout << data->p_asgns[j] << endl;
+        }
+
         if(show_results) {
             char **words = readWordsFile(vocab_fname.c_str(), wc);
             displayResults(data, words, 10);
